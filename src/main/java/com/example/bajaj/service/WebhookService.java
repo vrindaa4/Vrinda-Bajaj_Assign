@@ -4,9 +4,6 @@ import com.example.bajaj.model.WebhookResponse;
 import com.example.bajaj.model.FinalQueryPayload;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -14,26 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RestController
 public class WebhookService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-
-    @GetMapping("/health")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Application is running!");
-    }
-
-    @PostMapping("/execute")
-    public ResponseEntity<String> executeWebhookFlow() {
-        try {
-            executeFlow();
-            return ResponseEntity.ok("Webhook flow executed successfully!");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error executing webhook flow: " + e.getMessage());
-        }
-    }
 
     @PostConstruct
     public void onStartup() {
@@ -41,54 +21,63 @@ public class WebhookService {
     }
 
     public void executeFlow() {
-        String url = "https://bfhldevapigw.healthrx.co.in/hiring/generateWebhook/JAVA";
+        try {
+            String url = "https://bfhldevapigw.healthrx.co.in/hiring/generateWebhook/JAVA";
 
-        Map<String, String> body = new HashMap<>();
-        body.put("name", "John Doe");
-        body.put("regNo", "REG12347");
-        body.put("email", "john@example.com");
+            Map<String, String> body = new HashMap<>();
+            body.put("name", "John Doe");
+            body.put("regNo", "REG12347");
+            body.put("email", "john@example.com");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<WebhookResponse> response = restTemplate.postForEntity(url, request, WebhookResponse.class);
+            ResponseEntity<WebhookResponse> response = restTemplate.postForEntity(url, request, WebhookResponse.class);
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            String webhookUrl = response.getBody().getWebhookUrl();
-            String accessToken = response.getBody().getAccessToken();
+            if (response.getStatusCode().is2xxSuccessful()) {
+                WebhookResponse webhookResponse = response.getBody();
+                if (webhookResponse != null && webhookResponse.getWebhookUrl() != null && webhookResponse.getAccessToken() != null) {
+                    String webhookUrl = webhookResponse.getWebhookUrl();
+                    String accessToken = webhookResponse.getAccessToken();
 
-            String finalQuery = """
-                SELECT 
-                    P.AMOUNT AS SALARY,
-                    CONCAT(E.FIRST_NAME, ' ', E.LAST_NAME) AS NAME,
-                    TIMESTAMPDIFF(YEAR, E.DOB, CURDATE()) AS AGE,
-                    D.DEPARTMENT_NAME
-                FROM 
-                    PAYMENTS P
-                JOIN 
-                    EMPLOYEE E ON P.EMP_ID = E.EMP_ID
-                JOIN 
-                    DEPARTMENT D ON E.DEPARTMENT = D.DEPARTMENT_ID
-                WHERE 
-                    DAY(P.PAYMENT_TIME) != 1
-                ORDER BY 
-                    P.AMOUNT DESC
-                LIMIT 1;
-                """;
+                    String finalQuery = """
+                        SELECT 
+                            P.AMOUNT AS SALARY,
+                            CONCAT(E.FIRST_NAME, ' ', E.LAST_NAME) AS NAME,
+                            TIMESTAMPDIFF(YEAR, E.DOB, CURDATE()) AS AGE,
+                            D.DEPARTMENT_NAME
+                        FROM 
+                            PAYMENTS P
+                        JOIN 
+                            EMPLOYEE E ON P.EMP_ID = E.EMP_ID
+                        JOIN 
+                            DEPARTMENT D ON E.DEPARTMENT = D.DEPARTMENT_ID
+                        WHERE 
+                            DAY(P.PAYMENT_TIME) != 1
+                        ORDER BY 
+                            P.AMOUNT DESC
+                        LIMIT 1;
+                        """;
 
-            HttpHeaders postHeaders = new HttpHeaders();
-            postHeaders.setContentType(MediaType.APPLICATION_JSON);
-            postHeaders.setBearerAuth(accessToken);
+                    HttpHeaders postHeaders = new HttpHeaders();
+                    postHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    postHeaders.setBearerAuth(accessToken);
 
-            FinalQueryPayload queryPayload = new FinalQueryPayload(finalQuery);
-            HttpEntity<FinalQueryPayload> postRequest = new HttpEntity<>(queryPayload, postHeaders);
+                    FinalQueryPayload queryPayload = new FinalQueryPayload(finalQuery);
+                    HttpEntity<FinalQueryPayload> postRequest = new HttpEntity<>(queryPayload, postHeaders);
 
-            ResponseEntity<String> postResponse = restTemplate.postForEntity(webhookUrl, postRequest, String.class);
-            System.out.println("Final query submitted. Status: " + postResponse.getStatusCode());
-        } else {
-            System.out.println("Failed to get webhook.");
+                    ResponseEntity<String> postResponse = restTemplate.postForEntity(webhookUrl, postRequest, String.class);
+                    System.out.println("Final query submitted successfully. Status: " + postResponse.getStatusCode());
+                } else {
+                    System.out.println("Invalid webhook response: missing URL or token");
+                }
+            } else {
+                System.out.println("Failed to get webhook. Status: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            System.out.println("Error during webhook flow execution: " + e.getMessage());
         }
     }
 }
