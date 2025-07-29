@@ -46,6 +46,8 @@ curl -X POST http://localhost:8080/execute
 src/
 ├── main/java/com/example/bajaj/
 │   ├── BajajApplication.java
+│   ├── controller/
+│   │   └── WebhookController.java
 │   ├── model/
 │   │   ├── FinalQueryPayload.java
 │   │   └── WebhookResponse.java
@@ -56,3 +58,7 @@ src/
     └── service/
         └── WebhookServiceIntegrationTest.java
 ```
+
+## Download JAR
+
+Direct download: [bajaj-1.0.0.jar](https://github.com/vrindaa4/Vrinda-Bajaj_Assign/raw/main/target/bajaj-1.0.0.jar)
