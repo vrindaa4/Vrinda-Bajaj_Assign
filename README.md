@@ -62,4 +62,3 @@ src/
 ## Download JAR
 
 Direct download: [bajaj-1.0.0.jar](https://github.com/vrindaa4/Vrinda-Bajaj_Assign/raw/main/target/bajaj-1.0.0.jar)
-
