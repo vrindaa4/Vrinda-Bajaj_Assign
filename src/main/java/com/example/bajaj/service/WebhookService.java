@@ -14,9 +14,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RestController
 public class WebhookService {
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Application is running!");
+    }
+
+    @PostMapping("/execute")
+    public ResponseEntity<String> executeWebhookFlow() {
+        try {
+            executeFlow();
+            return ResponseEntity.ok("Webhook flow executed successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error executing webhook flow: " + e.getMessage());
+        }
+    }
 
     @PostConstruct
     public void onStartup() {
