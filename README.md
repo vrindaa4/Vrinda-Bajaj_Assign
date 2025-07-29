@@ -56,8 +56,3 @@ src/
     └── service/
         └── WebhookServiceIntegrationTest.java
 ```
-
-## Download JAR
-
-Direct download: [bajaj-1.0.0.jar](https://github.com/YOUR_USERNAME/bajaj-spring-boot-project/raw/main/target/bajaj-1.0.0.jar)
-
