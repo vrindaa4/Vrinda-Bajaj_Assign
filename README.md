@@ -1,7 +1,5 @@
 # Bajaj Spring Boot Project
 
-⚠️ **URGENT FOR JAVA STUDENTS: Submit by 10:15 AM - Time is Critical!** ⚠️
-
 A Spring Boot application that implements a webhook service with SQL query execution.
 
 ## Features
@@ -58,7 +56,3 @@ src/
     └── service/
         └── WebhookServiceIntegrationTest.java
 ```
-
-## Download JAR
-
-Direct download: [bajaj-1.0.0.jar](https://github.com/vrindaa4/Vrinda-Bajaj_Assign/raw/main/target/bajaj-1.0.0.jar)
