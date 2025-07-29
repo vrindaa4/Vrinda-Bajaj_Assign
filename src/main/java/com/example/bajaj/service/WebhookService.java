@@ -6,7 +6,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,11 +13,6 @@ import java.util.Map;
 public class WebhookService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-
-    @PostConstruct
-    public void onStartup() {
-        executeFlow();
-    }
 
     public void executeFlow() {
         try {
